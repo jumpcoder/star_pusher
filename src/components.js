@@ -9,7 +9,7 @@ Crafty.sprite(50, 85, 'asserts/Plain_Block.png',{"SpriteInsideFloor":[0,0]});
 Crafty.sprite(50, 85, 'asserts/Grass_Block.png',{"SpriteOutsideFloor":[0,0]});
 
 Crafty.sprite(492, 279, 'asserts/star_title.png',{"SpriteStartTitle":[0,0]});
-Crafty.sprite(499, 184, 'asserts/star_solved.png',{"SpriteEndTitle":[0,0]});
+Crafty.sprite(499, 184, 'asserts/star_solved.png',{"SpriteSolvedTitle":[0,0]});
 
 Crafty.sprite(50, 85, 'asserts/Star.png',{"SpriteStar":[0,0]});
 Crafty.sprite(50, 85, 'asserts/princess.png',{"SpritePlayer":[0,0]});
@@ -25,19 +25,21 @@ Crafty.c('TitleStart',{
 	}
 });
 
-Crafty.c('TitleEnd', {
+Crafty.c('TitleSolved', {
 	init:function(){
-		this.addComponent('2D, DOM, SpriteEndTitle');
+		this.addComponent('2D, DOM, SpriteSolvedTitle');
 	}
 });
 
 //tile组件
+//地板tile的高由25px,40px,20px三段构成，其中的40px刚好又可以分为15px和25px两段
 Crafty.c('TileInsideFloor',{
 	init:function(){
 		this.addComponent("2D, DOM, SpriteInsideFloor");
 	}
 });
 
+//草地tile的高由25px,40px,20px三段构成，其中的40px刚好又可以分为15px和25px两段
 Crafty.c('TileOutsideFloor',{
 	init:function(){
 		this.addComponent("2D, DOM, SpriteOutsideFloor");
@@ -45,8 +47,27 @@ Crafty.c('TileOutsideFloor',{
 });
 
 Crafty.c('TileUncoveredGoal',{
+	_over:false,
 	init:function(){
-		this.addComponent("2D, DOM, SpriteUncoveredGoal");
+		var width = Game.stageGrid.tile.width;
+		var marginTop = 25;
+		var height = 65;
+		
+		this.addComponent("2D, DOM, SpriteUncoveredGoal ,Collision, WiredHitBox")
+			.collision([0,marginTop],[0,height],[width,height],[width,marginTop])
+			.onHit('Star',this._starOver,this._starLeave);
+	},
+	_starOver:function(data){
+		if(!this._over){
+			if(this.contains(data[0].x,data[0].y,data[0].w,data[0].h)){
+				this._over = true;
+				Crafty.trigger('SolvedOne');
+			}
+		}
+	},
+	_starLeave:function(data){
+		this._over = false;
+		Crafty.trigger('UnsolvedOne');
 	}
 });
 
@@ -54,7 +75,8 @@ Crafty.c('TileUncoveredGoal',{
 Crafty.c('TileCorner',{
 	init:function(){
 		var width = Game.stageGrid.tile.width;
-		var marginTop = 20;
+		var marginTop = 25;
+		var height = 45;
 		var height = Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight + marginTop;
 		this.addComponent("2D, DOM, SpriteCorner,Collision, Solid, StaticSolid")
 			.collision([0,marginTop],[0,height], [width,height], [width,marginTop]);
@@ -64,8 +86,8 @@ Crafty.c('TileCorner',{
 Crafty.c('TileWall',{
 	init:function(){
 		var width = Game.stageGrid.tile.width;
-		var marginTop = 20;
-		var height = Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight + marginTop;
+		var marginTop = 25;
+		var height = 45;
 		this.addComponent("2D, DOM, SpriteWall,Collision, Solid, StaticSolid")
 			.collision([0,marginTop],[0,height], [width,height], [width,marginTop]);
 	}
@@ -74,14 +96,15 @@ Crafty.c('TileWall',{
 //位于地图上的对象组件
 //Solid + PushSolid
 Crafty.c('Star',{
-	_testMove:12,
+	_testMove:21,
 	init:function(){
 		this.addComponent("2D, DOM, SpriteStar,Solid, PushSolid, Collision, WiredHitBox")
-		.collision([4,12],[4,58],[46,58],[46,12])
-		.bind('PushTop',this._pushDown)
-		.bind('PushRight',this._pushLeft)
-		.bind('PushBottom',this._pushUp)
-		.bind('PushLeft',this._pushRight);
+			//.collision([4,12],[4,58],[46,58],[46,12])
+			.collision([0,25],[0,65],[50,65],[50,25])
+			.bind('PushTop',this._pushDown)
+			.bind('PushRight',this._pushLeft)
+			.bind('PushBottom',this._pushUp)
+			.bind('PushLeft',this._pushRight);
 	},
 	_pushDown:function(){
 		this.y += this._testMove;//试探性地移动
