@@ -42,8 +42,8 @@ Crafty.c('TileCorner',{
 	init:function(){
 		var width = Game.stageGrid.tile.width;
 		var marginTop = 20;
-		var height = Game.stageGrid.tile.Height;
-		this.addComponent("2D, DOM, SpriteCorner,Collision, Solid, StaticSolid, WiredHitBox")
+		var height = Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight + marginTop;
+		this.addComponent("2D, DOM, SpriteCorner,Collision, Solid, StaticSolid")
 			.collision([0,marginTop],[0,height], [width,height], [width,marginTop]);
 	}
 });
@@ -52,7 +52,7 @@ Crafty.c('TileWall',{
 	init:function(){
 		var width = Game.stageGrid.tile.width;
 		var marginTop = 20;
-		var height = Game.stageGrid.tile.Height;
+		var height = Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight + marginTop;
 		this.addComponent("2D, DOM, SpriteWall,Collision, Solid, StaticSolid")
 			.collision([0,marginTop],[0,height], [width,height], [width,marginTop]);
 	}
@@ -137,7 +137,7 @@ Crafty.c('Player',{
 	_fixZ:function(oldPosition){
 		//判定当前实体是否移动
 		//注意z值需要是一个整数，否则globalZ不会乘以10000
-		var fix = Math.ceil(Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight)/2;
+		var fix = Math.ceil((Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight)/2);
 		this.z = this.y  + fix;
 	},
 	//一旦和StaticSolid实体发生碰撞，则停止实体的移动
