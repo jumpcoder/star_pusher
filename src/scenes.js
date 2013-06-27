@@ -36,6 +36,10 @@ Crafty.scene('Loading', function(){
 	});
 });
 
+/*
+ * 游戏开始场景
+ *
+ */
 Crafty.scene('StartMenu',function(){
 	var titleStart = Crafty.e('TitleStart').attr({x:0,y:0,z:1});
 	
@@ -59,10 +63,14 @@ Crafty.scene('StartMenu',function(){
  */
 Crafty.scene('Game', function(){
 	//获得当前关卡的地图及其每一层
-	var currentLevel = levels[Game.currentLevelIndex];
+	var currentLevel = levels[Game.currentLevelIndex++];
+	if(currentLevel === undefined){
+		Crafty.scene('StartMenu');
+	}
 	var map = currentLevel.map;
 	var ground = map.ground;
 	var objects = map.objects;
+	var goals = map.goals;
 	
 	//如果地图比舞台小时，用于将地图居中
 	//用舞台的宽减去地图的宽再除以2
@@ -91,7 +99,7 @@ Crafty.scene('Game', function(){
 						y:row * (Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight) + Game.currentMap.paddingYToCenter,
 						z:row * (Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight) + Game.currentMap.paddingYToCenter
 					});
-				console.log('z=',e.z);
+				console.log(row * (Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight));
 			}
 		}
 	}
@@ -112,4 +120,37 @@ Crafty.scene('Game', function(){
 		}
 	}
 	
+	SceneHandle.changeToSolved = function(){
+		if(--goals === 0){
+			Crafty.scene('SolvedMenu');
+		}
+	};
+	SceneHandle.changeToUnsolved = function(){
+		goals++;
+	};
+	
+	Crafty.bind('SolvedOne',SceneHandle.changeToSolved);
+	Crafty.bind('UnsolvedOne', SceneHandle.changeToUnsolved);
+	
+},function(){
+	Crafty.unbind('SolvedOne', SceneHandle.changeToSolved);
+	Crafty.bind('UnsolvedOne', SceneHandle.changeToUnsolved);
+});
+
+/*
+ * 游戏胜利场景
+ *
+ */
+Crafty.scene('SolvedMenu',function(){
+	var titleSolved = Crafty.e('TitleEnd').attr({x:0,y:0,z:1});
+	
+	var paddingToXCenter = (Game.stage.width() - titleStart.w) / 2;
+	var paddingToYCenter = (Game.stage.height() - titleStart.h) / 2;
+	titleSolved.attr({x:paddingToXCenter, y:paddingToYCenter});
+	
+		
+	//事件处理函数已在StartMenu中定义
+	Crafty.bind('KeyDown', SceneHandle.changeToGame);
+},function(){
+	Crafty.unbind('KeyDown', SceneHandle.changeToGame);
 });
