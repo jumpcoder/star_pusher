@@ -1,8 +1,12 @@
 ﻿
+//该全局对象用于保存在所有场景中使用到的全局事件处理函数
+var SceneHandle = {};
+
 /*
  * 载入场景，此时将载入所有用到的图片，音频等文件
  *
  */
+
 Crafty.scene('Loading', function(){
 	Crafty.e('2D, DOM, Text')
 		.text('Loading...')
@@ -28,8 +32,25 @@ Crafty.scene('Loading', function(){
 		];
 	
 	Crafty.load(assertList, function(){
-		Crafty.scene('Game');
+		Crafty.scene('StartMenu');
 	});
+});
+
+Crafty.scene('StartMenu',function(){
+	var titleStart = Crafty.e('TitleStart').attr({x:0,y:0,z:1});
+	
+	var paddingToXCenter = (Game.stage.width() - titleStart.w) / 2;
+	var paddingToYCenter = (Game.stage.height() - titleStart.h) / 2;
+	titleStart.attr({x:paddingToXCenter, y:paddingToYCenter});
+	
+		
+	//定义当按下键盘时的事件处理函数
+	SceneHandle.changeToGame = function(){
+		Crafty.scene('Game');
+	};
+	Crafty.bind('KeyDown', SceneHandle.changeToGame);
+},function(){
+	Crafty.unbind('KeyDown', SceneHandle.changeToGame);
 });
 
 /*

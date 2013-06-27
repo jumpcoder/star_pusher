@@ -8,8 +8,8 @@ Crafty.sprite(50, 85, 'asserts/Wood_Block_Tall.png',{"SpriteWall":[0,0]});
 Crafty.sprite(50, 85, 'asserts/Plain_Block.png',{"SpriteInsideFloor":[0,0]});
 Crafty.sprite(50, 85, 'asserts/Grass_Block.png',{"SpriteOutsideFloor":[0,0]});
 
-Crafty.sprite(50, 85, 'asserts/star_title.png',{"SpriteStartTitle":[0,0]});
-Crafty.sprite(50, 85, 'asserts/star_solved.png',{"SpriteEndTitle":[0,0]});
+Crafty.sprite(492, 279, 'asserts/star_title.png',{"SpriteStartTitle":[0,0]});
+Crafty.sprite(499, 184, 'asserts/star_solved.png',{"SpriteEndTitle":[0,0]});
 
 Crafty.sprite(50, 85, 'asserts/Star.png',{"SpriteStar":[0,0]});
 Crafty.sprite(50, 85, 'asserts/princess.png',{"SpritePlayer":[0,0]});
@@ -17,6 +17,19 @@ Crafty.sprite(50, 85, 'asserts/Rock.png',{"SpriteRock":[0,0]});
 Crafty.sprite(50, 85, 'asserts/Tree_Short.png',{"SpriteTreeShort":[0,0]});
 Crafty.sprite(50, 85, 'asserts/Tree_Tall.png',{"SpriteTreeTall":[0,0]});
 Crafty.sprite(50, 85, 'asserts/Tree_Ugly.png',{"SpriteTreeUgly":[0,0]});
+
+//title组件
+Crafty.c('TitleStart',{
+	init:function(){
+		this.addComponent('2D, DOM, SpriteStartTitle');
+	}
+});
+
+Crafty.c('TitleEnd', {
+	init:function(){
+		this.addComponent('2D, DOM, SpriteEndTitle');
+	}
+});
 
 //tile组件
 Crafty.c('TileInsideFloor',{
