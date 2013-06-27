@@ -41,18 +41,20 @@ Crafty.c('TileUncoveredGoal',{
 Crafty.c('TileCorner',{
 	init:function(){
 		var width = Game.stageGrid.tile.width;
-		var height = Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight;
-		this.addComponent("2D, DOM, SpriteCorner,Collision, Solid, StaticSolid")
-			.collision([0,2],[width,2],[width,height+2],[0,height+2]);
+		var marginTop = 20;
+		var height = Game.stageGrid.tile.Height;
+		this.addComponent("2D, DOM, SpriteCorner,Collision, Solid, StaticSolid, WiredHitBox")
+			.collision([0,marginTop],[0,height], [width,height], [width,marginTop]);
 	}
 });
 
 Crafty.c('TileWall',{
 	init:function(){
 		var width = Game.stageGrid.tile.width;
-		var height = Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight;
+		var marginTop = 20;
+		var height = Game.stageGrid.tile.Height;
 		this.addComponent("2D, DOM, SpriteWall,Collision, Solid, StaticSolid")
-			.collision([0,2],[width,2],[width,height+2],[0,height+2]);
+			.collision([0,marginTop],[0,height], [width,height], [width,marginTop]);
 	}
 });
 
@@ -65,7 +67,7 @@ Crafty.c('Star',{
 		.collision([4,12],[4,58],[46,58],[46,12])
 		.bind('PushTop',this._pushDown)
 		.bind('PushRight',this._pushLeft)
-		.bind('PushBottom',this._pushTop)
+		.bind('PushBottom',this._pushUp)
 		.bind('PushLeft',this._pushRight);
 	},
 	_pushDown:function(){
@@ -75,15 +77,17 @@ Crafty.c('Star',{
 		}else{
 			this.y -= this._testMove;
 			this.y += Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight;
+			this.z += Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight;
 		}
 	},
-	_pushTop:function(){
+	_pushUp:function(){
 		this.y -= this._testMove;
 		if(this.hit('Solid')){
 			this.y += this._testMove;
 		}else{
 			this.y += this._testMove;
 			this.y -= Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight;
+			this.z -= Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight;
 		}
 	},
 	_pushRight:function(){
@@ -110,20 +114,41 @@ Crafty.c('Star',{
 });
 
 Crafty.c('Player',{
-	
+	_moved:false,
 	init:function(){
 		this.addComponent('2D, DOM, SpritePlayer, Solid, Collision, Multiway')
 			.collision([4,8],[4,54],[46,54],[46,8])
 			.multiway(4, {UP_ARROW:-90, DOWN_ARROW:90,RIGHT_ARROW:0,LEFT_ARROW:180})
+			//Moved是底层的事件，只要实体的x，y轴发生改变就会被触发
+			.bind('Moved', this._move)
+			.bind('Moving', this._fixZ)
 			.onHit('StaticSolid',this._stopMovement)
 			.onHit('PushSolid',this._push);
 	},
+	//一旦和StaticSolid实体发生碰撞则判定为未移动，否则将触发更高级的Moving事件，该事件只会在没有和Solid实体发生碰撞时触发
+	_move:function(oldPosition){
+		if(!this.hit('StaticSolid')){
+			this._moved = true;
+			this.trigger('Moving', oldPosition);
+		}
+	},
+	
+	//动态改变实体z轴的值，修复实体被地图tile遮挡的问题
+	_fixZ:function(oldPosition){
+		//判定当前实体是否移动
+		//注意z值需要是一个整数，否则globalZ不会乘以10000
+		var fix = Math.ceil(Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight)/2;
+		this.z = this.y  + fix;
+	},
+	//一旦和StaticSolid实体发生碰撞，则停止实体的移动
 	_stopMovement:function(){
 		this._speed = 0;
+		this._moved = false;
 		if(this._movement){
 			this.x -= this._movement.x;
 			this.y -= this._movement.y;
 		}
+		
 	},
 	_push:function(data){
 		this._speed = 0;
@@ -141,4 +166,5 @@ Crafty.c('Player',{
 			}
 		}
 	}
+	
 });

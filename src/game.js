@@ -18,17 +18,24 @@ var Game = {
 	},
 	currentLevelIndex:0,
 	backgroundColor:"rgb(0,170,255)",
-	width:function(){
-		return this.stageGrid.width * this.stageGrid.cell.width;
+	currentMap:{
+		paddingXToCenter:0,
+		paddingYToCenter:0
 	},
-	height:function(){
-		return this.stageGrid.height * this.stageGrid.cell.height;
+	stage:{
+		width:function(){
+			return Game.stageGrid.width * Game.stageGrid.cell.width;
+		},
+		height:function(){
+			return Game.stageGrid.height * Game.stageGrid.cell.height;
+		}
 	},
 	start:function(){
-		Crafty.init(this.width(), this.height());
+		Crafty.init(this.stage.width(), this.stage.height());
 		Crafty.background(this.backgroundColor);
 		Crafty.scene('Loading');
 	
 	}
 	
-}
+};
+
