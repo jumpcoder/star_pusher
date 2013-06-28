@@ -53,7 +53,7 @@ Crafty.c('TileUncoveredGoal',{
 		var marginTop = 25;
 		var height = 65;
 		
-		this.addComponent("2D, DOM, SpriteUncoveredGoal ,Collision, WiredHitBox")
+		this.addComponent("2D, DOM, SpriteUncoveredGoal ,Collision")
 			.collision([0,marginTop],[0,height],[width,height],[width,marginTop])
 			.onHit('Star',this._starOver,this._starLeave);
 	},
@@ -100,7 +100,7 @@ Crafty.c('TileWall',{
 Crafty.c('Star',{
 	_testMove:21,
 	init:function(){
-		this.addComponent("2D, DOM, SpriteStar,Solid, PushSolid, Collision, WiredHitBox")
+		this.addComponent("2D, DOM, SpriteStar,Solid, PushSolid, Collision")
 			//.collision([4,12],[4,58],[46,58],[46,12])
 			.collision([0,25],[0,65],[50,65],[50,25])
 			.bind('PushTop',this._pushDown)
@@ -154,9 +154,9 @@ Crafty.c('Star',{
 Crafty.c('Player',{
 	_moved:false,
 	init:function(){
-		this.addComponent('2D, DOM, SpritePlayer, Solid, Collision, Multiway, WiredHitBox')
+		this.addComponent('2D, DOM, SpritePlayer, Solid, Collision, Multiway')
 			//.collision([4,8],[4,54],[46,54],[46,8])
-			.collision([6,30],[6,60],[46,60],[46,30])
+			.collision([10,34],[10,56],[42,56],[42,34])
 			.multiway(4, {UP_ARROW:-90, DOWN_ARROW:90,RIGHT_ARROW:0,LEFT_ARROW:180})
 			//Moved是底层的事件，只要实体的x，y轴发生改变就会被触发
 			.bind('Moved', this._move)
@@ -176,7 +176,7 @@ Crafty.c('Player',{
 	_fixZ:function(oldPosition){
 		//判定当前实体是否移动
 		//注意z值需要是一个整数，否则globalZ不会乘以10000
-		var fix = Math.ceil((Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight)/2);
+		var fix = 20;
 		this.z = this.y  + fix;
 	},
 	//一旦和StaticSolid实体发生碰撞，则停止实体的移动

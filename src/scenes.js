@@ -120,6 +120,9 @@ Crafty.scene('Game', function(){
 		}
 	}
 	
+	var player = Crafty("Player");
+	Crafty.viewport.follow(player,0,0);
+	
 	SceneHandle.changeToSolved = function(){
 		if(--goals === 0){
 			Crafty.scene('SolvedMenu');
