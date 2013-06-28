@@ -47,7 +47,9 @@ Crafty.scene('StartMenu',function(){
 	var paddingToYCenter = (Game.stage.height() - titleStart.h) / 2;
 	titleStart.attr({x:paddingToXCenter, y:paddingToYCenter});
 	
-		
+	//将关卡重置为第一关
+	Game.currentLevelIndex = 0;
+	
 	//定义当按下键盘时的事件处理函数
 	SceneHandle.changeToGame = function(){
 		Crafty.scene('Game');
@@ -63,10 +65,8 @@ Crafty.scene('StartMenu',function(){
  */
 Crafty.scene('Game', function(){
 	//获得当前关卡的地图及其每一层
-	var currentLevel = levels[Game.currentLevelIndex++];
-	if(currentLevel === undefined){
-		Crafty.scene('StartMenu');
-	}
+	var currentLevel = levels[Game.currentLevelIndex];
+
 	var map = currentLevel.map;
 	var ground = map.ground;
 	var objects = map.objects;
@@ -91,7 +91,7 @@ Crafty.scene('Game', function(){
 	for(var row = 0; row < ground.length; row++){
 		for(var col = 0; col < ground[row].length; col++){
 			var tileComponent = mappingToComponent[ground[row][col]];
-			console.log(tileComponent);
+			//console.log(tileComponent);
 			if(tileComponent !== ' '){
 				var e = Crafty.e(tileComponent)
 					.attr({
@@ -99,7 +99,7 @@ Crafty.scene('Game', function(){
 						y:row * (Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight) + Game.currentMap.paddingYToCenter,
 						z:row * (Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight) + Game.currentMap.paddingYToCenter
 					});
-				console.log(row * (Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight));
+				//console.log(row * (Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight));
 			}
 		}
 	}
@@ -108,7 +108,7 @@ Crafty.scene('Game', function(){
 	for(var row = 0; row < objects.length; row++){
 		for(var col = 0; col < objects[row].length; col++){
 			var tileComponent = mappingToComponent[objects[row][col]];
-			console.log(tileComponent);
+			//console.log(tileComponent);
 			if(tileComponent !== ' '){
 				Crafty.e(tileComponent)
 					.attr({
@@ -142,15 +142,21 @@ Crafty.scene('Game', function(){
  *
  */
 Crafty.scene('SolvedMenu',function(){
-	var titleSolved = Crafty.e('TitleEnd').attr({x:0,y:0,z:1});
+	var titleSolved = Crafty.e('TitleSolved').attr({x:0,y:0,z:1});
 	
-	var paddingToXCenter = (Game.stage.width() - titleStart.w) / 2;
-	var paddingToYCenter = (Game.stage.height() - titleStart.h) / 2;
+	var paddingToXCenter = (Game.stage.width() - titleSolved.w) / 2;
+	var paddingToYCenter = (Game.stage.height() - titleSolved.h) / 2;
 	titleSolved.attr({x:paddingToXCenter, y:paddingToYCenter});
 	
 		
-	//事件处理函数已在StartMenu中定义
-	Crafty.bind('KeyDown', SceneHandle.changeToGame);
+	//定义事件处理函数changeToNext
+	SceneHandle.changeToNext = function(){
+		var currentLevel = levels[++Game.currentLevelIndex];
+		if(currentLevel === undefined){
+			Crafty.scene('StartMenu');
+		}
+	};
+	Crafty.bind('KeyDown', SceneHandle.changeToNext);
 },function(){
-	Crafty.unbind('KeyDown', SceneHandle.changeToGame);
+	Crafty.unbind('KeyDown', SceneHandle.changeToNext);
 });
