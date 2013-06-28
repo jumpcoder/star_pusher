@@ -59,15 +59,17 @@ Crafty.c('TileUncoveredGoal',{
 	},
 	_starOver:function(data){
 		if(!this._over){
-			if(this.contains(data[0].x,data[0].y,data[0].w,data[0].h)){
+			if(this.contains(data[0].obj.x,data[0].obj.y,data[0].obj.w,data[0].obj.h)){
 				this._over = true;
 				Crafty.trigger('SolvedOne');
+				console.log('SolvedOne!');
 			}
 		}
 	},
 	_starLeave:function(data){
 		this._over = false;
 		Crafty.trigger('UnsolvedOne');
+		console.log('UnsolvedOne');
 	}
 });
 
@@ -152,8 +154,9 @@ Crafty.c('Star',{
 Crafty.c('Player',{
 	_moved:false,
 	init:function(){
-		this.addComponent('2D, DOM, SpritePlayer, Solid, Collision, Multiway')
-			.collision([4,8],[4,54],[46,54],[46,8])
+		this.addComponent('2D, DOM, SpritePlayer, Solid, Collision, Multiway, WiredHitBox')
+			//.collision([4,8],[4,54],[46,54],[46,8])
+			.collision([0,25],[0,65],[50,65],[50,25])
 			.multiway(4, {UP_ARROW:-90, DOWN_ARROW:90,RIGHT_ARROW:0,LEFT_ARROW:180})
 			//Moved是底层的事件，只要实体的x，y轴发生改变就会被触发
 			.bind('Moved', this._move)
