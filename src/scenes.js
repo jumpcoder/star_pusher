@@ -154,6 +154,8 @@ Crafty.scene('SolvedMenu',function(){
 		var currentLevel = levels[++Game.currentLevelIndex];
 		if(currentLevel === undefined){
 			Crafty.scene('StartMenu');
+		}else{
+			Crafty.scene('Game');
 		}
 	};
 	Crafty.bind('KeyDown', SceneHandle.changeToNext);

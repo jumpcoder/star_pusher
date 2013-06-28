@@ -78,8 +78,8 @@ Crafty.c('TileCorner',{
 	init:function(){
 		var width = Game.stageGrid.tile.width;
 		var marginTop = 25;
-		var height = 45;
-		var height = Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight + marginTop;
+		var height = 65;
+		//var height = Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight + marginTop;
 		this.addComponent("2D, DOM, SpriteCorner,Collision, Solid, StaticSolid")
 			.collision([0,marginTop],[0,height], [width,height], [width,marginTop]);
 	}
@@ -89,7 +89,7 @@ Crafty.c('TileWall',{
 	init:function(){
 		var width = Game.stageGrid.tile.width;
 		var marginTop = 25;
-		var height = 45;
+		var height = 65;
 		this.addComponent("2D, DOM, SpriteWall,Collision, Solid, StaticSolid")
 			.collision([0,marginTop],[0,height], [width,height], [width,marginTop]);
 	}
@@ -156,7 +156,7 @@ Crafty.c('Player',{
 	init:function(){
 		this.addComponent('2D, DOM, SpritePlayer, Solid, Collision, Multiway, WiredHitBox')
 			//.collision([4,8],[4,54],[46,54],[46,8])
-			.collision([0,25],[0,65],[50,65],[50,25])
+			.collision([6,30],[6,60],[46,60],[46,30])
 			.multiway(4, {UP_ARROW:-90, DOWN_ARROW:90,RIGHT_ARROW:0,LEFT_ARROW:180})
 			//Moved是底层的事件，只要实体的x，y轴发生改变就会被触发
 			.bind('Moved', this._move)
