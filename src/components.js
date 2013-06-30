@@ -1,4 +1,9 @@
-﻿
+﻿//基础组件
+Crafty.c('Draw',{
+	init:function(){
+		this.addComponent('2D, DOM');
+	}
+});
 
 //精灵组件
 Crafty.sprite(50, 85, 'asserts/RedSelector.png',{"SpriteUncoveredGoal":[0,0]});
@@ -65,13 +70,17 @@ Crafty.c('TileUncoveredGoal',{
 				console.log('SolvedOne!');
 			}
 		}
+		return this;
 	},
 	_starLeave:function(data){
 		this._over = false;
 		Crafty.trigger('UnsolvedOne');
 		console.log('UnsolvedOne');
+		return this;
 	}
 });
+
+
 
 //Solid + StaticSolid
 Crafty.c('TileCorner',{
@@ -117,6 +126,7 @@ Crafty.c('Star',{
 			this.y += Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight;
 			this.z += Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight;
 		}
+		return this;
 	},
 	_pushUp:function(){
 		this.y -= this._testMove;
@@ -127,6 +137,7 @@ Crafty.c('Star',{
 			this.y -= Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight;
 			this.z -= Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight;
 		}
+		return this;
 	},
 	_pushRight:function(){
 		this.x += this._testMove;
@@ -139,6 +150,7 @@ Crafty.c('Star',{
 			this.x -= this._testMove;
 			this.x += Game.stageGrid.tile.width;
 		}
+		return this;
 	},
 	_pushLeft:function(){
 		this.x -= this._testMove;
@@ -148,6 +160,7 @@ Crafty.c('Star',{
 			this.x += this._testMove;
 			this.x -= Game.stageGrid.tile.width;
 		}
+		return this;
 	}
 });
 
@@ -170,6 +183,7 @@ Crafty.c('Player',{
 			this._moved = true;
 			this.trigger('Moving', oldPosition);
 		}
+		return this;
 	},
 	
 	//动态改变实体z轴的值，修复实体被地图tile遮挡的问题
@@ -178,6 +192,7 @@ Crafty.c('Player',{
 		//注意z值需要是一个整数，否则globalZ不会乘以10000
 		var fix = 20;
 		this.z = this.y  + fix;
+		return this;
 	},
 	//一旦和StaticSolid实体发生碰撞，则停止实体的移动
 	_stopMovement:function(){
@@ -187,6 +202,7 @@ Crafty.c('Player',{
 			this.x -= this._movement.x;
 			this.y -= this._movement.y;
 		}
+		return this;
 		
 	},
 	_push:function(data){
@@ -204,6 +220,7 @@ Crafty.c('Player',{
 				data[0].obj.trigger('PushLeft');
 			}
 		}
+		return this;
 	}
 	
 });
