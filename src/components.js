@@ -1,9 +1,162 @@
-﻿//基础组件
-Crafty.c('Draw',{
+﻿
+
+//基础组件
+//事件组件
+/**@
+* #Event
+* Component provide the method that can according to different collision situation trigger specify event once.
+# 
+*/
+
+Crafty.c('Event',{
 	init:function(){
-		this.addComponent('2D, DOM');
+		this.requires('2D,Collision');
+		console.log(this);
+	},
+    /**@
+    * #.cover
+	* @comp Event
+	* @sign public this .cover(String component, String coverEvent[, String scope])
+	* @sign public this .cover(String component, String coverEvent[, String uncoverEvent, String scope])
+	* @param component - Component to check collisions for
+	* @param coverEvent - Event name that will be triggered once, when other entity within current entity.
+	* @param uncoverEvent - Event name that will be triggered once, when other entity leave current entity.
+	* @param scope - Determine that the event will be triggered globally or only be triggered for the entity
+	*
+	* trigger an specified event when an entity within current entity.
+	*/
+	cover:function(comp, coverEvent){
+		var cover = false;
+		if(arguments.length === 3){
+			var scope = arguments[2];
+			this.bind('EnterFrame', function(){
+				var hitdata = this.hit(comp);
+				if(hitdata){
+					if(!cover){
+						if(this.contains(hitdata[0].obj.x, hitdata[0].obj.y, hitdata[0].obj.w, hitdata[0].obj.h)){
+							cover = true;
+							if(scope === 'g'){
+								Crafty.trigger(coverEvent);
+							}else{
+								hitdata[0].obj.trigger(coverEvent);
+							}
+						}
+					}
+				}else{
+					if(cover){
+						cover = false;
+					}
+				}
+			});
+		}else{
+			var uncoverEvent = arguments[2], scope = arguments[3];
+			this.bind('EnterFrame', function(){
+				var hitdata = this.hit(comp);
+				if(hitdata){
+					if(!cover){
+						if(this.contains(hitdata[0].obj.x, hitdata[0].obj.y, hitdata[0].obj.w, hitdata[0].obj.h)){
+							cover = true;
+							if(scope === 'g'){
+								Crafty.trigger(coverEvent);
+							}else{
+								hitdata[0].obj.trigger(coverEvent);
+							}
+						}
+					}
+				}else{
+					if(cover){
+						if(uncoverEvent){
+							if(scope === 'g'){
+								Crafty.trigger(uncoverEvent);
+							}else{
+								hitdata[0].obj.trigger(uncoverEvent);
+							};
+						}
+						cover = false;
+					}
+				}
+			});
+		}
+		return this;
+	},
+    /**@
+    * #.contact
+	* @comp Event
+	* @sign public this .contact(String component, String contactEvent[, String scope])
+	* @sign public this .contact(String component, String contactEvent[, String uncontactEvent, String scope])
+	* @param component - Component to check collisions for
+	* @param contactEvent - Event name that will be triggered once, when other entity intersect current entity.
+	* @param uncontactEvent - Event name that will be triggered once, when other entity leave current entity.
+	* @param scope - Determine that the event will be triggered globally or only be triggered for the entity
+	*
+	* trigger an specified event when an entity within current entity.
+	*/
+	contact:function(comp, contactEvent,uncontactEvent, scope){
+		var contact = false;
+		if(arguments === 3){
+			var scope = arguments[2];
+			this.bind('EnterFrame', function(){
+				var hitdata = this.hit(comp);
+				if(hitdata){
+					if(!contact){
+						if(this.intersect(hitdata[0].obj.x, hitdata[0].obj.y, hitdata[0].obj.w, hitdata[0].obj.h)){
+							contact = true;
+							if(scope === 'g'){
+								Crafty.trigger(contactEvent);
+							}else{
+								hitdata[0].obj.trigger(contactEvent);
+							}
+						}
+					}
+				}else{
+					if(contact){
+						contact = false;
+					}
+				}
+			});
+		}else{
+			var uncontactEvent = arguments[2], scope = arguments[3];
+			this.bind('EnterFrame', function(){
+				var hitdata = this.hit(comp);
+				if(hitdata){
+					if(!contact){
+						if(this.intersect(hitdata[0].obj.x, hitdata[0].obj.y, hitdata[0].obj.w, hitdata[0].obj.h)){
+							contact = true;
+							if(scope === 'g'){
+								Crafty.trigger(contactEvent);
+							}else{
+								hitdata[0].obj.trigger(contactEvent);
+							}
+						}
+					}
+				}else{
+					if(contact){
+						if(uncontactEvent){
+							if(scope === 'g'){
+								Crafty.trigger(uncontactEvent);
+							}else{
+								hitdata[0].obj.trigger(uncontactEvent);
+							};
+						}
+						contact = false;
+					}
+				}
+			});
+		}
+		return this;
 	}
 });
+
+
+
+//用于绘制的Draw组件
+Crafty.c('Draw',{
+	init:function(){
+		this.addComponent('2D', 'DOM');
+	}
+});
+
+
 
 //精灵组件
 Crafty.sprite(50, 85, 'asserts/RedSelector.png',{"SpriteUncoveredGoal":[0,0]});
@@ -26,13 +179,13 @@ Crafty.sprite(50, 85, 'asserts/Tree_Ugly.png',{"SpriteTreeUgly":[0,0]});
 //title组件
 Crafty.c('TitleStart',{
 	init:function(){
-		this.addComponent('2D, DOM, SpriteStartTitle');
+		this.addComponent('Draw','SpriteStartTitle');
 	}
 });
 
 Crafty.c('TitleSolved', {
 	init:function(){
-		this.addComponent('2D, DOM, SpriteSolvedTitle');
+		this.addComponent('Draw', 'SpriteSolvedTitle');
 	}
 });
 
@@ -40,17 +193,17 @@ Crafty.c('TitleSolved', {
 //地板tile的高由25px,40px,20px三段构成，其中的40px刚好又可以分为15px和25px两段
 Crafty.c('TileInsideFloor',{
 	init:function(){
-		this.addComponent("2D, DOM, SpriteInsideFloor");
+		this.addComponent('Draw', 'SpriteInsideFloor');
 	}
 });
 
 //草地tile的高由25px,40px,20px三段构成，其中的40px刚好又可以分为15px和25px两段
 Crafty.c('TileOutsideFloor',{
 	init:function(){
-		this.addComponent("2D, DOM, SpriteOutsideFloor");
+		this.addComponent('Draw', 'SpriteOutsideFloor');
 	}
 });
-
+/*
 Crafty.c('TileUncoveredGoal',{
 	_over:false,
 	init:function(){
@@ -58,7 +211,7 @@ Crafty.c('TileUncoveredGoal',{
 		var marginTop = 25;
 		var height = 65;
 		
-		this.addComponent("2D, DOM, SpriteUncoveredGoal ,Collision")
+		this.addComponent('Draw', 'SpriteUncoveredGoal','Collision')
 			.collision([0,marginTop],[0,height],[width,height],[width,marginTop])
 			.onHit('Star',this._starOver,this._starLeave);
 	},
@@ -78,6 +231,17 @@ Crafty.c('TileUncoveredGoal',{
 		console.log('UnsolvedOne');
 		return this;
 	}
+});*/
+Crafty.c('TileUncoveredGoal',{
+	init:function(){
+		var width = Game.stageGrid.tile.width;
+		var marginTop = 25;
+		var height = 65;
+		
+		this.addComponent('Draw', 'SpriteUncoveredGoal','Event')
+			.collision([0,marginTop],[0,height],[width,height],[width,marginTop])
+			.cover('Star','SolvedOne','UnsolvedOne','g');
+	}
 });
 
 
@@ -89,7 +253,7 @@ Crafty.c('TileCorner',{
 		var marginTop = 25;
 		var height = 65;
 		//var height = Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight + marginTop;
-		this.addComponent("2D, DOM, SpriteCorner,Collision, Solid, StaticSolid")
+		this.addComponent('Draw', 'SpriteCorner','Collision', 'Solid', 'StaticSolid')
 			.collision([0,marginTop],[0,height], [width,height], [width,marginTop]);
 	}
 });
@@ -99,7 +263,7 @@ Crafty.c('TileWall',{
 		var width = Game.stageGrid.tile.width;
 		var marginTop = 25;
 		var height = 65;
-		this.addComponent("2D, DOM, SpriteWall,Collision, Solid, StaticSolid")
+		this.addComponent('Draw', 'SpriteWall' , 'Collision', 'Solid', 'StaticSolid')
 			.collision([0,marginTop],[0,height], [width,height], [width,marginTop]);
 	}
 });
@@ -109,7 +273,7 @@ Crafty.c('TileWall',{
 Crafty.c('Star',{
 	_testMove:21,
 	init:function(){
-		this.addComponent("2D, DOM, SpriteStar,Solid, PushSolid, Collision")
+		this.addComponent('Draw', 'SpriteStar','Solid', 'PushSolid', 'Collision')
 			//.collision([4,12],[4,58],[46,58],[46,12])
 			.collision([0,25],[0,65],[50,65],[50,25])
 			.bind('PushTop',this._pushDown)
@@ -167,7 +331,7 @@ Crafty.c('Star',{
 Crafty.c('Player',{
 	_moved:false,
 	init:function(){
-		this.addComponent('2D, DOM, SpritePlayer, Solid, Collision, Multiway')
+		this.addComponent('Draw', 'SpritePlayer', 'Solid', 'Collision', 'Multiway')
 			//.collision([4,8],[4,54],[46,54],[46,8])
 			.collision([10,34],[10,56],[42,56],[42,34])
 			.multiway(4, {UP_ARROW:-90, DOWN_ARROW:90,RIGHT_ARROW:0,LEFT_ARROW:180})
