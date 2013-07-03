@@ -10,8 +10,7 @@
 
 Crafty.c('Event',{
 	init:function(){
-		this.requires('2D,Collision');
-		console.log(this);
+		this.addComponent('2D,Collision');
 	},
     /**@
     * #.cover
@@ -158,7 +157,10 @@ Crafty.c('Draw',{
 
 
 
-//精灵组件
+/*
+ * 精灵组件
+ */
+ 
 Crafty.sprite(50, 85, 'asserts/RedSelector.png',{"SpriteUncoveredGoal":[0,0]});
 Crafty.sprite(50, 85, 'asserts/Selector.png',{"SpriteCoveredGoal":[0,0]});
 Crafty.sprite(50, 85, 'asserts/Wall_Block_Tall.png',{"SpriteCorner":[0,0]});
@@ -203,35 +205,7 @@ Crafty.c('TileOutsideFloor',{
 		this.addComponent('Draw', 'SpriteOutsideFloor');
 	}
 });
-/*
-Crafty.c('TileUncoveredGoal',{
-	_over:false,
-	init:function(){
-		var width = Game.stageGrid.tile.width;
-		var marginTop = 25;
-		var height = 65;
-		
-		this.addComponent('Draw', 'SpriteUncoveredGoal','Collision')
-			.collision([0,marginTop],[0,height],[width,height],[width,marginTop])
-			.onHit('Star',this._starOver,this._starLeave);
-	},
-	_starOver:function(data){
-		if(!this._over){
-			if(this.contains(data[0].obj.x,data[0].obj.y,data[0].obj.w,data[0].obj.h)){
-				this._over = true;
-				Crafty.trigger('SolvedOne');
-				console.log('SolvedOne!');
-			}
-		}
-		return this;
-	},
-	_starLeave:function(data){
-		this._over = false;
-		Crafty.trigger('UnsolvedOne');
-		console.log('UnsolvedOne');
-		return this;
-	}
-});*/
+
 Crafty.c('TileUncoveredGoal',{
 	init:function(){
 		var width = Game.stageGrid.tile.width;
@@ -246,14 +220,14 @@ Crafty.c('TileUncoveredGoal',{
 
 
 
-//Solid + StaticSolid
+//Solid + Static
 Crafty.c('TileCorner',{
 	init:function(){
 		var width = Game.stageGrid.tile.width;
 		var marginTop = 25;
 		var height = 65;
 		//var height = Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight + marginTop;
-		this.addComponent('Draw', 'SpriteCorner','Collision', 'Solid', 'StaticSolid')
+		this.addComponent('Draw', 'SpriteCorner','Static')
 			.collision([0,marginTop],[0,height], [width,height], [width,marginTop]);
 	}
 });
@@ -263,23 +237,46 @@ Crafty.c('TileWall',{
 		var width = Game.stageGrid.tile.width;
 		var marginTop = 25;
 		var height = 65;
-		this.addComponent('Draw', 'SpriteWall' , 'Collision', 'Solid', 'StaticSolid')
+		this.addComponent('Draw', 'SpriteWall' , 'Static')
 			.collision([0,marginTop],[0,height], [width,height], [width,marginTop]);
 	}
 });
 
-//位于地图上的对象组件
-//Solid + PushSolid
-Crafty.c('Star',{
+
+/*
+ * Push和Static是互斥的一个描述可以推动的实体，一个描述不能推动的实体
+ *
+ */
+ 
+//Solid表示不能穿过的物体
+Crafty.c('Solid', {
+	init:function(){
+		this.addComponent('Collision');
+	}
+});
+
+//Static表示不能穿过且无法被移动的物体
+Crafty.c('Static',{
+	init:function(){
+		this.addComponent('Solid');
+	}
+	
+});
+
+//Pushed表示不能穿过且能够被推动指定单位的物体
+//优化：
+//1.提供初始化函数，可以指定移动的单位和移动的次数，或一直移动直到碰到其它的Solid实体时停下
+//2.提前测试，使用一个透明的实体或使用Crafty.map来做？
+//3.
+//4.
+Crafty.c('Pushed',{
 	_testMove:21,
 	init:function(){
-		this.addComponent('Draw', 'SpriteStar','Solid', 'PushSolid', 'Collision')
-			//.collision([4,12],[4,58],[46,58],[46,12])
-			.collision([0,25],[0,65],[50,65],[50,25])
-			.bind('PushTop',this._pushDown)
-			.bind('PushRight',this._pushLeft)
-			.bind('PushBottom',this._pushUp)
-			.bind('PushLeft',this._pushRight);
+		this.addComponent('Solid')
+			.bind('PushAtTop', this._pushDown)
+			.bind('PushAtRight', this._pushToLeft)
+			.bind('PushAtBottom', this._pushUp)
+			.bind('PushAtLeft', this._pushToRight);
 	},
 	_pushDown:function(){
 		this.y += this._testMove;//试探性地移动
@@ -303,20 +300,17 @@ Crafty.c('Star',{
 		}
 		return this;
 	},
-	_pushRight:function(){
+	_pushToRight:function(){
 		this.x += this._testMove;
-		console.log('Right!',this.hit('StaticSolid'));
 		if(this.hit('Solid')){
-			console.log('Hit!');
 			this.x -= this._testMove;
 		}else{
-			console.log('NoHit!');
 			this.x -= this._testMove;
 			this.x += Game.stageGrid.tile.width;
 		}
 		return this;
 	},
-	_pushLeft:function(){
+	_pushToLeft:function(){
 		this.x -= this._testMove;
 		if(this.hit('Solid')){
 			this.x += this._testMove;
@@ -328,22 +322,35 @@ Crafty.c('Star',{
 	}
 });
 
+
+/*
+ *位于地图上的对象组件
+ */
+ 
+Crafty.c('Star',{
+	init:function(){
+		this.addComponent('Draw', 'SpriteStar', 'Pushed')
+			.collision([0,25],[0,65],[50,65],[50,25]);
+	}
+});
+
+
 Crafty.c('Player',{
 	_moved:false,
 	init:function(){
-		this.addComponent('Draw', 'SpritePlayer', 'Solid', 'Collision', 'Multiway')
+		this.addComponent('Draw', 'SpritePlayer', 'Multiway', 'Solid')
 			//.collision([4,8],[4,54],[46,54],[46,8])
 			.collision([10,34],[10,56],[42,56],[42,34])
 			.multiway(4, {UP_ARROW:-90, DOWN_ARROW:90,RIGHT_ARROW:0,LEFT_ARROW:180})
 			//Moved是底层的事件，只要实体的x，y轴发生改变就会被触发
 			.bind('Moved', this._move)
 			.bind('Moving', this._fixZ)
-			.onHit('StaticSolid',this._stopMovement)
-			.onHit('PushSolid',this._push);
+			.onHit('Static',this._stop)
+			.onHit('Pushed',this._push);
 	},
-	//一旦和StaticSolid实体发生碰撞则判定为未移动，否则将触发更高级的Moving事件，该事件只会在没有和Solid实体发生碰撞时触发
+	//一旦和Static实体发生碰撞则判定为未移动，否则将触发更高级的Moving事件，该事件只会在没有和Solid实体发生碰撞时触发
 	_move:function(oldPosition){
-		if(!this.hit('StaticSolid')){
+		if(!this.hit('Static')){
 			this._moved = true;
 			this.trigger('Moving', oldPosition);
 		}
@@ -354,12 +361,12 @@ Crafty.c('Player',{
 	_fixZ:function(oldPosition){
 		//判定当前实体是否移动
 		//注意z值需要是一个整数，否则globalZ不会乘以10000
-		var fix = 20;
-		this.z = this.y  + fix;
+		var fix = 25;
+		this.z = Math.ceil(this.y  + fix);
 		return this;
 	},
-	//一旦和StaticSolid实体发生碰撞，则停止实体的移动
-	_stopMovement:function(){
+	//一旦和Static实体发生碰撞，则停止实体的移动
+	_stop:function(){
 		this._speed = 0;
 		this._moved = false;
 		if(this._movement){
@@ -375,13 +382,13 @@ Crafty.c('Player',{
 			this.x -= this._movement.x;
 			this.y -= this._movement.y;
 			if(data[0].normal.x === 0 && data[0].normal.y === -1){
-				data[0].obj.trigger('PushTop');
+				data[0].obj.trigger('PushAtTop');
 			}else if(data[0].normal.x === 1 && data[0].normal.y === 0){
-				data[0].obj.trigger('PushRight');
+				data[0].obj.trigger('PushAtRight');
 			}else if(data[0].normal.x === 0 && data[0].normal.y === 1){
-				data[0].obj.trigger('PushBottom');
+				data[0].obj.trigger('PushAtBottom');
 			}else if(data[0].normal.x === -1 && data[0].normal.y === 0){
-				data[0].obj.trigger('PushLeft');
+				data[0].obj.trigger('PushAtLeft');
 			}
 		}
 		return this;
