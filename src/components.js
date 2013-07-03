@@ -264,59 +264,93 @@ Crafty.c('Static',{
 });
 
 //Pushed表示不能穿过且能够被推动指定单位的物体
-//优化：
-//1.提供初始化函数，可以指定移动的单位和移动的次数，或一直移动直到碰到其它的Solid实体时停下
-//2.提前测试，使用一个透明的实体或使用Crafty.map来做？
-//3.
-//4.
+//想法：提供具有更多参数的初始化函数，可以指定移动的单位和移动的次数，或一直移动直到碰到其它的Solid实体时停下
+
 Crafty.c('Pushed',{
-	_testMove:21,
+	xDistance:0,
+	yDistance:0,
 	init:function(){
 		this.addComponent('Solid')
 			.bind('PushAtTop', this._pushDown)
 			.bind('PushAtRight', this._pushToLeft)
 			.bind('PushAtBottom', this._pushUp)
 			.bind('PushAtLeft', this._pushToRight);
+			
 	},
+	pushed:function(xDistance, yDistance){
+		this.xDistance = xDistance;
+		this.yDistance = yDistance;
+		return this;
+	},
+	//在移动前需要提前测试移动方向是否有Solid实体阻挡，使用Crafty.map来做，也可以使用一个透明的实体来做
 	_pushDown:function(){
-		this.y += this._testMove;//试探性地移动
-		if(this.hit('Solid')){
-			this.y -= this._testMove;
-		}else{
-			this.y -= this._testMove;
-			this.y += Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight;
-			this.z += Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight;
+		var widthCenter = this.x + this.w/2;
+		var heightCenter = this.y + this.h;
+		var goal = null;
+		//获取和指定区域相接触的所有实体，因为长方形的tile重叠的部分比较多所以会返回多个实体
+		var entitys = Crafty.map.search({_x:widthCenter+1, _y:heightCenter+1, _w:1, _h:1});
+		//筛选需要做检测的实体
+		for(var i = 0; i < entitys.length; i++){
+			//因为上下两个tile的间距是40
+			if(this.y + 40 === entitys[i].y){
+				goal = entitys[i];
+			}
 		}
+		//如果实体不是Solid实体则移动当前实体
+		if(!goal.has('Solid')){
+			this.y += this.yDistance;
+			this.z += this.yDistance;
+		}
+
 		return this;
 	},
 	_pushUp:function(){
-		this.y -= this._testMove;
-		if(this.hit('Solid')){
-			this.y += this._testMove;
-		}else{
-			this.y += this._testMove;
-			this.y -= Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight;
-			this.z -= Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight;
+		var widthCenter = this.x + this.w/2;
+		var heightCenter = this.y;	
+		var goal = null;
+		var entitys = Crafty.map.search({_x:widthCenter+1, _y:heightCenter+5, _w:1, _h:1});
+		
+		for(var i = 0; i < entitys.length; i++){
+			if(this.y - 40 === entitys[i].y){
+				goal = entitys[i];
+			}
 		}
+		if(!goal.has('Solid')){
+			this.y -= this.yDistance;
+			this.z -= this.yDistance;
+		}
+
 		return this;
 	},
 	_pushToRight:function(){
-		this.x += this._testMove;
-		if(this.hit('Solid')){
-			this.x -= this._testMove;
-		}else{
-			this.x -= this._testMove;
-			this.x += Game.stageGrid.tile.width;
+		var widthCenter = this.x + this.w + this.w/2;
+		var heightCenter = this.y + this.h/2;
+		var goal = null;
+		var entitys = Crafty.map.search({_x:widthCenter+1, _y:heightCenter+1, _w:1, _h:1});
+		
+		for(var i = 0; i < entitys.length; i++){
+			if(this.y === entitys[i].y){
+				goal = entitys[i];
+			}
+		}
+		if(!goal.has('Solid')){
+			this.x += this.xDistance;
 		}
 		return this;
 	},
 	_pushToLeft:function(){
-		this.x -= this._testMove;
-		if(this.hit('Solid')){
-			this.x += this._testMove;
-		}else{
-			this.x += this._testMove;
-			this.x -= Game.stageGrid.tile.width;
+		var widthCenter = this.x - this.w/2;
+		var heightCenter = this.y + this.h/2;
+		var goal = null;
+		var entitys = Crafty.map.search({_x:widthCenter+1, _y:heightCenter+1, _w:1, _h:1});
+		
+		for(var i = 0; i < entitys.length; i++){
+			if(this.y === entitys[i].y){
+				goal = entitys[i];
+			}
+		}
+		if(!goal.has('Solid')){
+			this.x -= this.xDistance;
 		}
 		return this;
 	}
@@ -330,7 +364,8 @@ Crafty.c('Pushed',{
 Crafty.c('Star',{
 	init:function(){
 		this.addComponent('Draw', 'SpriteStar', 'Pushed')
-			.collision([0,25],[0,65],[50,65],[50,25]);
+			.collision([0,25],[0,65],[50,65],[50,25])
+			.pushed(Game.stageGrid.tile.width, Game.stageGrid.tile.height - Game.stageGrid.tile.floorHeight);
 	}
 });
 
@@ -339,27 +374,15 @@ Crafty.c('Player',{
 	_moved:false,
 	init:function(){
 		this.addComponent('Draw', 'SpritePlayer', 'Multiway', 'Solid')
-			//.collision([4,8],[4,54],[46,54],[46,8])
 			.collision([10,34],[10,56],[42,56],[42,34])
 			.multiway(4, {UP_ARROW:-90, DOWN_ARROW:90,RIGHT_ARROW:0,LEFT_ARROW:180})
-			//Moved是底层的事件，只要实体的x，y轴发生改变就会被触发
-			.bind('Moved', this._move)
-			.bind('Moving', this._fixZ)
+			//只要实体的x，y轴发生改变就会触发Moved事件
+			.bind('Moved', this._fixZ)
 			.onHit('Static',this._stop)
 			.onHit('Pushed',this._push);
 	},
-	//一旦和Static实体发生碰撞则判定为未移动，否则将触发更高级的Moving事件，该事件只会在没有和Solid实体发生碰撞时触发
-	_move:function(oldPosition){
-		if(!this.hit('Static')){
-			this._moved = true;
-			this.trigger('Moving', oldPosition);
-		}
-		return this;
-	},
-	
 	//动态改变实体z轴的值，修复实体被地图tile遮挡的问题
 	_fixZ:function(oldPosition){
-		//判定当前实体是否移动
 		//注意z值需要是一个整数，否则globalZ不会乘以10000
 		var fix = 25;
 		this.z = Math.ceil(this.y  + fix);
