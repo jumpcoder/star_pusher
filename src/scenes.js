@@ -64,6 +64,8 @@ Crafty.scene('StartMenu',function(){
  *
  */
 Crafty.scene('Game', function(){
+
+	
 	//获得当前关卡的地图及其每一层
 	var currentLevel = levels[Game.currentLevelIndex];
 
