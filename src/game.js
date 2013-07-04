@@ -2,13 +2,18 @@
 	Game.start();
 
 };
+/*
+ * 新想法：
+ * 可以模仿Crafty.isomatic()写一个Crafty.gird()方法自动以某个值为单位1来放置tile
+ * 这个游戏中的tile在x轴上是每50px一个，在y轴上是每40px一个
+ */
 var Game = {
 	stageGrid:{
 		width:12,
 		height:10,
 		cell:{
 			width:50,
-			height:85-45
+			height:40
 		},
 		tile:{
 			width:50,
